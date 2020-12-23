@@ -4,6 +4,7 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="boardMapper">
    <!-- 게시판 글 작성 -->
+   <!-- 
    <insert id="insert">
 	   INSERT INTO MP_BOARD(    BNO 
 	   					      , TITLE 
@@ -15,19 +16,38 @@
 	                 		  , #{writer}  )
    
    </insert>
+    -->
+   <!-- 위 소스코드가 파일업로드를 위해 아래처럼 변경됨 -->
+   <insert id="insert" parameterType="kr.co.vo.BoardVO" useGeneratedKeys="true" keyProperty="bno">
+	    <selectKey keyProperty="bno" resultType="int" order="BEFORE">
+	    	SELECT MP_BOARD_SEQ.NEXTVAL FROM DUAL
+	    </selectKey>
+	    INSERT INTO MP_BOARD(    BNO 
+	   					       , TITLE 
+	   					       , CONTENT 
+	   					       , WRITER  )
+	                  VALUES(    #{bno}
+	                 		   , #{title}
+	                 		   , #{content}
+	                 		   , #{writer}  )
    
+    </insert>
+    
+    
    <select id="listPage" resultType="kr.co.vo.BoardVO" parameterType="kr.co.vo.SearchCriteria">
 		SELECT  BNO, 
 		        TITLE, 
 		        CONTENT,
 		        WRITER, 
-		        REGDATE
+		        REGDATE,
+		        HIT
 		 FROM ( 
 		        SELECT BNO, 
 		               TITLE, 
 		               CONTENT, 
 		               WRITER, 
-		               REGDATE, 
+		               REGDATE,
+		               HIT, 
 		               ROW_NUMBER() OVER(ORDER BY BNO DESC) AS RNUM
 		         FROM MP_BOARD
 		         WHERE 1=1 
@@ -76,4 +96,55 @@
 		FROM MP_BOARD
 		WHERE BNO = #{bno}
 	</delete>
+	
+	<!-- 파일첨부 업로드 할 쿼리 -->
+	<insert id="insertFile" parameterType="hashMap">
+		INSERT INTO MP_FILE(
+			FILE_NO,
+			BNO,
+			ORG_FILE_NAME,
+			STORED_FILE_NAME,
+			FILE_SIZE
+		) VALUES(
+			SEQ_MP_FILE_NO.NEXTVAL,
+			#{BNO},
+			#{ORG_FILE_NAME},
+			#{STORED_FILE_NAME},
+			#{FILE_SIZE}
+		)
+	</insert>
+	
+	<!-- 첨부파일 조회 -->
+	<select id="selectFileList" parameterType="int" resultType="hashMap">
+		SELECT FILE_NO,
+    		   ORG_FILE_NAME,
+    		   ROUND(FILE_SIZE/1024,1) AS FILE_SIZE,
+    		   DEL_GB
+    	  FROM MP_FILE
+    	 WHERE BNO = #{BNO}
+    	   AND DEL_GB = 'N'
+    	 ORDER BY FILE_NO ASC
+	</select>
+	
+	<!-- 첨부파일 다운 -->
+	<select id="selectFileInfo" parameterType="hashMap" resultType="hashMap">
+		SELECT
+			STORED_FILE_NAME,
+			ORG_FILE_NAME
+		FROM MP_FILE
+		WHERE FILE_NO = #{FILE_NO}
+	</select>
+	
+	<update id="updateFile" parameterType="hashMap">
+    	UPDATE MP_FILE SET
+    	DEL_GB = 'Y'
+    	WHERE FILE_NO = #{FILE_NO}
+    </update>
+    
+    <!-- 게시판 조회수 -->
+    <update id="boardHit" parameterType="int">
+    	UPDATE MP_BOARD SET 
+    	HIT = HIT+1 
+    	WHERE BNO = #{bno}
+    </update>
 </mapper>

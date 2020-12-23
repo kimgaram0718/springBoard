@@ -9,64 +9,53 @@
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
 	 	
 	 	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-		<title>회원가입</title>
+		<title>회원탈퇴</title>
 	</head>
 	<script type="text/javascript">
 		$(document).ready(function(){
 			// 취소
 			$(".cencle").on("click", function(){
+				
 				location.href = "/";
+						    
 			})
-			
+		
 			$("#submit").on("click", function(){
-				if($("#userId").val()==""){
-					alert("아이디를 입력해주세요.");
-					$("#userId").focus();
-					return false;
-				}
 				if($("#userPass").val()==""){
 					alert("비밀번호를 입력해주세요.");
 					$("#userPass").focus();
 					return false;
 				}
-				if($("#userName").val()==""){
-					alert("성명을 입력해주세요.");
-					$("#userName").focus();
-					return false;
-				}
-				var idChkVal = $("#idChk").val();
-				if(idChkVal == "N"){
-					alert("중복확인 버튼을 눌러주세요.");
-				}else if(idChkVal == "Y"){
-					$("#regForm").submit();
-				}
-			});
-		})
-		
-		function fn_idChk(){
-			$.ajax({
-				url : "/member/idChk",
-				type : "post",
-				dataType : "json",
-				data : {"userId" : $("#userId").val()},
-				success : function(data){
-					if(data == 1){
-						alert("중복된 아이디입니다.");
-					}else if(data == 0){
-						$("#idChk").attr("value", "Y");
-						alert("사용가능한 아이디입니다.");
+				$.ajax({
+					url : "/member/passChk",
+					type : "POST",
+					dataType : "json",
+					data : $("#delForm").serializeArray(),
+					success: function(data){
+						
+						if(data == true){
+							if(confirm("회원탈퇴하시겠습니까?")) {
+								$("#delForm").submit();
+							}
+						}else{
+							alert("패스워드가 틀렸습니다.")
+							return;
+						}
 					}
-				}
-			})
-		}
+				})
+				
+			});
+			
+				
+			
+		})
 	</script>
 	<body>
 		<section id="container">
-			<form action="/member/register" method="post" id="regForm">
+			<form action="/member/memberDelete" method="post" id="delForm">
 				<div class="form-group has-feedback">
 					<label class="control-label" for="userId">아이디</label>
-					<input class="form-control" type="text" id="userId" name="userId" />
-					<button class="idChk" type="button" id="idChk" onclick="fn_idChk();" value="N">중복확인</button>
+					<input class="form-control" type="text" id="userId" name="userId" value="${member.userId}" readonly="readonly"/>
 				</div>
 				<div class="form-group has-feedback">
 					<label class="control-label" for="userPass">패스워드</label>
@@ -74,14 +63,19 @@
 				</div>
 				<div class="form-group has-feedback">
 					<label class="control-label" for="userName">성명</label>
-					<input class="form-control" type="text" id="userName" name="userName" />
+					<input class="form-control" type="text" id="userName" name="userName" value="${member.userName}" readonly="readonly"/>
 				</div>
-				
 			</form>
-				<div class="form-group has-feedback">
-					<button class="btn btn-success" type="button" id="submit">회원가입</button>
-					<button class="cencle btn btn-danger" type="button">취소</button>
-				</div>
+			
+			<div class="form-group has-feedback">
+				<button class="btn btn-success" type="button" id="submit">회원탈퇴</button>
+				<button class="cencle btn btn-danger" type="button">취소</button>
+			</div>
+			<div>
+				<c:if test="${msg == false}">
+					비밀번호가 맞지 않습니다.
+				</c:if>
+			</div>
 		</section>
 		
 	</body>

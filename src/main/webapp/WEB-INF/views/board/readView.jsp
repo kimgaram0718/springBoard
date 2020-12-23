@@ -3,13 +3,18 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <html>
 	<head>
+		<!-- 합쳐지고 최소화된 최신 CSS -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+		<!-- 부가적인 테마 -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
-		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	 	
+	 	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	 	
 	 	<title>게시판</title>
 	</head>
 	
 	<script type="text/javascript">
+		
 		$(document).ready(function(){
 			var formObj = $("form[name='readForm']");
 			
@@ -25,44 +30,39 @@
 				
 				var deleteYN = confirm("삭제하시겠습니까?");
 				if(deleteYN == true){
-					formObj.attr("action", "/board/delete");
-					formObj.attr("method", "post");
-					formObj.submit();
+					
+				formObj.attr("action", "/board/delete");
+				formObj.attr("method", "post");
+				formObj.submit();
+					
 				}
-			})
-			
-			// 취소
-			$(".list_btn").on("click", function(){
-				
-				location.href = "/board/list";
 			})
 			
 			// 목록
 			$(".list_btn").on("click", function(){
-
+				
 				location.href = "/board/list?page=${scri.page}"
-				+"&perPageNum=${scri.perPageNum}"
-				+"&searchType=${scri.searchType}&keyword=${scri.keyword}";
+						      +"&perPageNum=${scri.perPageNum}"
+						      +"&searchType=${scri.searchType}&keyword=${scri.keyword}";
 			})
 			
-			//======
-			//댓글관련
-			//댓글 작성
-			$(".replyWriteBtn").on("click", function() {
+			$(".replyWriteBtn").on("click", function(){
 				var formObj = $("form[name='replyForm']");
 				formObj.attr("action", "/board/replyWrite");
 				formObj.submit();
-			})
-			//댓글수정view
-			$(".replyUpdateBtn").on("click", function() {
+			});
+			
+			//댓글 수정 View
+			$(".replyUpdateBtn").on("click", function(){
 				location.href = "/board/replyUpdateView?bno=${read.bno}"
-						       +"&page=${scri.page}"
-						       +"&perPageNum=${scri.perPageNum}"
-						       +"&searchType=${scri.searchType}"
-						       +"&keyword=${scri.keyword}"
-						       +"&rno=" + $(this).attr("data-rno");
-			})
-			//댓글삭제view
+								+ "&page=${scri.page}"
+								+ "&perPageNum=${scri.perPageNum}"
+								+ "&searchType=${scri.searchType}"
+								+ "&keyword=${scri.keyword}"
+								+ "&rno="+$(this).attr("data-rno");
+			});
+			
+			//댓글 삭제 View
 			$(".replyDeleteBtn").on("click", function(){
 				location.href = "/board/replyDeleteView?bno=${read.bno}"
 					+ "&page=${scri.page}"
@@ -70,12 +70,17 @@
 					+ "&searchType=${scri.searchType}"
 					+ "&keyword=${scri.keyword}"
 					+ "&rno="+$(this).attr("data-rno");
-			})
-		});
+			});
+		})
+		function fn_fileDown(fileNo){
+			var formObj = $("form[name='readForm']");
+			$("#FILE_NO").attr("value", fileNo);
+			formObj.attr("action", "/board/fileDown");
+			formObj.submit();
+		}
 	</script>
 	
 	<body>
-	
 		<div class="container">
 			<header>
 				<h1> 게시판</h1>
@@ -85,121 +90,74 @@
 			<div>
 				<%@include file="nav.jsp" %>
 			</div>
-			<hr />
 			
 			<section id="container">
 				<form name="readForm" role="form" method="post">
 					<input type="hidden" id="bno" name="bno" value="${read.bno}" />
 					<input type="hidden" id="page" name="page" value="${scri.page}"> 
-  					<input type="hidden" id="perPageNum" name="perPageNum" value="${scri.perPageNum}"> 
-  					<input type="hidden" id="searchType" name="searchType" value="${scri.searchType}"> 
-  					<input type="hidden" id="keyword" name="keyword" value="${scri.keyword}">
+					<input type="hidden" id="perPageNum" name="perPageNum" value="${scri.perPageNum}"> 
+					<input type="hidden" id="searchType" name="searchType" value="${scri.searchType}"> 
+					<input type="hidden" id="keyword" name="keyword" value="${scri.keyword}"> 
+					<input type="hidden" id="FILE_NO" name="FILE_NO" value=""> 
 				</form>
 				
-				<!-- add1 -->
 				<div class="form-group">
 					<label for="title" class="col-sm-2 control-label">제목</label>
 					<input type="text" id="title" name="title" class="form-control" value="${read.title}" readonly="readonly" />
 				</div>
-				
 				<div class="form-group">
 					<label for="content" class="col-sm-2 control-label">내용</label>
-					<textarea id="content" name="content" class="form-control" readonly="readonly">
-						<c:out value="${read.content}" />
-					</textarea>
+					<textarea id="content" name="content" class="form-control" readonly="readonly"><c:out value="${read.content}" /></textarea>
 				</div>
-				
 				<div class="form-group">
 					<label for="writer" class="col-sm-2 control-label">작성자</label>
-					<input type="text" id="writer" name="writer" class="form-control" value="${read.writer}" readonly="readonly" />
+					<input type="text" id="writer" name="writer" class="form-control" value="${read.writer}"  readonly="readonly"/>
 				</div>
-				
 				<div class="form-group">
 					<label for="regdate" class="col-sm-2 control-label">작성날짜</label>
-					<fmt:formatDate value="${read.regdate}" pattern="yyyy-MM-dd" />
+					<fmt:formatDate value="${read.regdate}" pattern="yyyy-MM-dd" />	
 				</div>
-				<!-- add2 -->
-				
-				<!-- table 범위 대신 위처럼 부트스트랩 형태로 적용함 -->
-				<!--  
-				<table>
-					<tbody>
-						<tr>
-							<td>
-								<label for="title">제목</label><input type="text" id="title" name="title" value="${read.title}" readonly="readonly" />
-							</td>
-						</tr>	
-						<tr>
-							<td>
-								<label for="content">내용</label><textarea id="content" name="content" readonly="readonly"><c:out value="${read.content}" /></textarea>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<label for="writer">작성자</label><input type="text" id="writer" name="writer" value="${read.writer}"  readonly="readonly"/>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<label for="regdate">작성날짜</label>
-								<fmt:formatDate value="${read.regdate}" pattern="yyyy-MM-dd" />					
-							</td>
-						</tr>		
-					</tbody>			
-				</table>
-				-->
-				
+				<hr>
+				<span>파일 목록</span>
+				<div class="form-group" style="border: 1px solid #dbdbdb;">
+					<c:forEach var="file" items="${file}">
+						<a href="#" onclick="fn_fileDown('${file.FILE_NO}'); return false;">${file.ORG_FILE_NAME}</a>(${file.FILE_SIZE}kb)<br>
+					</c:forEach>
+				</div>
+				<hr>
 				<div>
 					<button type="button" class="update_btn btn btn-warning">수정</button>
 					<button type="button" class="delete_btn btn btn-danger">삭제</button>
 					<button type="button" class="list_btn btn btn-primary">목록</button>	
 				</div>
 				
-				<!-- add1 -->
 				<!-- 댓글 -->
 				<div id="reply">
 					<ol class="replyList">
-						<!-- 
-						class => BoardController,
-						method => read();
-						ex => model.addAttribute("replyList", replyList);
-						-->
 						<c:forEach items="${replyList}" var="replyList">
 							<li>
 								<p>
 								작성자 : ${replyList.writer}<br />
-								작성 날짜 : <fmt:formatDate value="${replyList.regdate}" pattern="yyyy-MM-dd" />
+								작성 날짜 :  <fmt:formatDate value="${replyList.regdate}" pattern="yyyy-MM-dd" />
 								</p>
-								
-								<p>
-									${replyList.content}<br />
-								</p>
-								
-								<!-- add1 -->
-								<!-- readView에서 댓글의 수정,삭제 버튼 생성  -->
+								  
+								<p>${replyList.content}</p>
 								<div>
-									<!-- 원래 class에  replyUpdateBtn 만 있었으나 부트스트랩 버전으로 변경-->
 									<button type="button" class="replyUpdateBtn btn btn-warning" data-rno="${replyList.rno}">수정</button>
 									<button type="button" class="replyDeleteBtn btn btn-danger" data-rno="${replyList.rno}">삭제</button>
-									
 								</div>
-								<!-- add2 -->
 							</li>
-						</c:forEach>
+						</c:forEach>   
 					</ol>
 				</div>
-				<!-- add2 -->
 				
-				<!-- add1 -->
-				<!-- 댓글작성 위한 form 태그 생성 -->
-				<!-- value의 read, scri는 어떤 것과 연동된 것인지 잘 모르겠음  -->
 				<form name="replyForm" method="post" class="form-horizontal">
 					<input type="hidden" id="bno" name="bno" value="${read.bno}" />
-					<input type="hidden" id="page" name="page" value="${scri.page}" />
-					<input type="hidden" id="perPageNum" name="perPageNum" value="${scri.perPageNum}" />
-					<input type="hidden" id="searchType" name="searchType" value="${scri.searchType}" />
-					<input type="hidden" id="keyword" name="keyword" value="${scri.keyword}" />
-					
+					<input type="hidden" id="page" name="page" value="${scri.page}"> 
+					<input type="hidden" id="perPageNum" name="perPageNum" value="${scri.perPageNum}"> 
+					<input type="hidden" id="searchType" name="searchType" value="${scri.searchType}"> 
+					<input type="hidden" id="keyword" name="keyword" value="${scri.keyword}"> 
+				
 					<div class="form-group">
 						<label for="writer" class="col-sm-2 control-label">댓글 작성자</label>
 						<div class="col-sm-10">
@@ -210,7 +168,7 @@
 					<div class="form-group">
 						<label for="content" class="col-sm-2 control-label">댓글 내용</label>
 						<div class="col-sm-10">
-							<input type="text" id="content" name="content" class="form-control" />
+							<input type="text" id="content" name="content" class="form-control"/>
 						</div>
 					</div>
 					
@@ -219,10 +177,7 @@
 							<button type="button" class="replyWriteBtn btn btn-success">작성</button>
 						</div>
 					</div>
-					<!-- ====== -->
 				</form>
-				<!-- add2 -->
-				
 			</section>
 			<hr />
 		</div>

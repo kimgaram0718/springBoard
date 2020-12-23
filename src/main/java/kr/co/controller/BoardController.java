@@ -1,8 +1,12 @@
 package kr.co.controller;
 
+import java.io.File;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +15,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import kr.co.service.BoardService;
@@ -32,20 +38,19 @@ public class BoardController {
 	ReplyService replyService;
 
 	// 게시판 글 작성 화면
-	@RequestMapping(value = "/board/writeView", method = RequestMethod.GET)
+	@RequestMapping(value = "/writeView", method = RequestMethod.GET)
 	public void writeView() throws Exception {
 		logger.info("writeView");
 
 	}
 
 	// 게시판 글 작성
-	@RequestMapping(value = "/board/write", method = RequestMethod.POST)
-	public String write(BoardVO boardVO) throws Exception {
+	@RequestMapping(value = "/write", method = RequestMethod.POST)
+	public String write(BoardVO boardVO, MultipartHttpServletRequest mpRequest) throws Exception{
 		logger.info("write");
-
-		service.write(boardVO);
-
-		return "redirect:/";
+		service.write(boardVO, mpRequest);
+		
+		return "redirect:/board/list";
 	}
 
 	// 게시판 목록 조회
@@ -78,6 +83,11 @@ public class BoardController {
 		List<ReplyVO> replyList = replyService.readReply(boardVO.getBno());
 		model.addAttribute("replyList", replyList);
 		
+		//add1
+		List<Map<String, Object>> fileList = service.selectFileList(boardVO.getBno());
+		model.addAttribute("file", fileList);
+		//add2
+		
 		return "board/readView";
 	}
 
@@ -89,16 +99,30 @@ public class BoardController {
 		model.addAttribute("update", service.read(boardVO.getBno()));
 		model.addAttribute("scri", scri);
 		
+		//add1
+		//file update
+		//update view page 에 file list 가 보이게 추가
+		List<Map<String, Object>> fileList = service.selectFileList(boardVO.getBno());
+		model.addAttribute("file", fileList);
+		//add
+		
 		return "board/updateView";
 	}
 
 	// 게시판 수정
+	//파라미터에 @RequestParam 이 붙은 fileNoDel[], fileNameDel[] 은 jsp 에서
+	//fileNoDel[], fileNameDel[] 로 지정한 값을 String[] 타입으로 담겠다는 뜻
 	@RequestMapping(value = "/update", method = RequestMethod.POST)
-	public String update(BoardVO boardVO, @ModelAttribute("scri") SearchCriteria scri, RedirectAttributes rttr) 
-			throws Exception{
+	public String update(BoardVO boardVO, 
+						 @ModelAttribute("scri") SearchCriteria scri, 
+						 RedirectAttributes rttr,
+						 @RequestParam(value = "fileNoDel[]") String[] files,
+						 @RequestParam(value = "fileNameDel[]") String[] fileNames,
+						 MultipartHttpServletRequest mpRequest)
+			throws Exception {
 		logger.info("update");	
-		
-		service.update(boardVO);
+		//매개변수를 update 함수에 대입하여 파라미터 값이 전달되게끔 함
+		service.update(boardVO, files, fileNames, mpRequest);
 		
 		rttr.addAttribute("page", scri.getPage());
 		rttr.addAttribute("perPageNum", scri.getPerPageNum());
@@ -123,6 +147,26 @@ public class BoardController {
 		
 		return "redirect:/board/list";
 	}
+	
+	//add1
+	@RequestMapping(value = "/fileDown")
+	public void fileDown(@RequestParam Map<String, Object> map, HttpServletResponse response) throws Exception {
+		Map<String, Object> resultMap = service.selectFileInfo(map);
+		String storedFileName = (String) resultMap.get("STORED_FILE_NAME");
+		String originalFileName = (String) resultMap.get("ORG_FILE_NAME");
+		
+		//파일을 저장했던 위치에서 첨부파일을 읽어 byte[] 형식으로 변환
+		byte fileByte[] = org.apache.commons.io.FileUtils.readFileToByteArray(new File("C:\\mp\\file\\" + storedFileName));
+		
+		response.setContentType("application/octet-stream");
+		response.setContentLength(fileByte.length);
+		response.setHeader("Content-Disposition", "attachment; fileName=\"" + URLEncoder.encode(originalFileName, "UTF-8") + "\";");
+		
+		response.getOutputStream().write(fileByte);
+		response.getOutputStream().flush();
+		response.getOutputStream().close();
+	}
+	//add2
 	
 	//=========
 	//========

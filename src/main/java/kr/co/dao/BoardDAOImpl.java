@@ -1,6 +1,7 @@
 package kr.co.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -55,5 +56,38 @@ public class BoardDAOImpl implements BoardDAO {
 	public int listCount(SearchCriteria scri) throws Exception {
 		// TODO Auto-generated method stub
 		return sqlSession.selectOne("boardMapper.listCount", scri);
+	}
+
+	//첨부파일 업로드 
+	@Override
+	public void insertFile(Map<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		sqlSession.insert("boardMapper.insertFile", map);
+	}
+
+	//bno 파라미터를 받아서 해당 bno의 첨부파일 검색
+	//리턴타입이 List 인 이유는 나중에 여러 개의 파일을 등록하기 위함
+	@Override
+	public List<Map<String, Object>> selectFileList(int bno) throws Exception {
+		// TODO Auto-generated method stub
+		return sqlSession.selectList("boardMapper.selectFileList", bno);
+	}
+
+	@Override
+	public Map<String, Object> selectFileInfo(Map<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("boardMapper.selectFileInfo", map);
+	}
+
+	@Override
+	public void updateFile(Map<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		sqlSession.update("boardMapper.updateFile", map);
+	}
+
+	@Override
+	public void boardHit(int bno) throws Exception {
+		// TODO Auto-generated method stub
+		sqlSession.update("boardMapper.boardHit", bno);
 	}
 }
